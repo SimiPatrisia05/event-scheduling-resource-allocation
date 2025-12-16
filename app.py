@@ -7,7 +7,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///events.db'
 app.config['SECRET_KEY'] = 'secret'
 db = SQLAlchemy(app)
 
-# ---------------- MODELS ---------------- #
 
 class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -26,8 +25,6 @@ class Allocation(db.Model):
     event_id = db.Column(db.Integer, db.ForeignKey('event.id'))
     resource_id = db.Column(db.Integer, db.ForeignKey('resource.id'))
 
-# ---------------- CONFLICT LOGIC ---------------- #
-
 def has_conflict(resource_id, start, end, exclude_event_id=None):
     allocations = Allocation.query.filter_by(resource_id=resource_id).all()
     for alloc in allocations:
@@ -38,7 +35,6 @@ def has_conflict(resource_id, start, end, exclude_event_id=None):
             return True
     return False
 
-# ---------------- ROUTES ---------------- #
 
 @app.route('/')
 def index():
@@ -82,8 +78,6 @@ def allocate():
     flash("✅ Resource allocated successfully!")
     return redirect('/')
 
-# ---------------- EDIT EVENT ---------------- #
-
 @app.route('/edit_event/<int:event_id>', methods=['GET', 'POST'])
 def edit_event(event_id):
     event = Event.query.get(event_id)
@@ -104,7 +98,6 @@ def edit_event(event_id):
         return redirect('/')
     return render_template('edit_event.html', event=event)
 
-# ---------------- DELETE EVENT ---------------- #
 
 @app.route('/delete/<int:event_id>', methods=['POST'])
 def delete_event(event_id):
@@ -115,7 +108,6 @@ def delete_event(event_id):
     flash("🗑 Event deleted successfully!")
     return redirect(request.referrer or '/')
 
-# ---------------- EDIT RESOURCE INLINE ---------------- #
 
 @app.route('/edit_resource/<int:resource_id>', methods=['POST'])
 def edit_resource(resource_id):
@@ -126,8 +118,6 @@ def edit_resource(resource_id):
     flash("✅ Resource updated successfully!")
     return redirect('/')
 
-# ---------------- DELETE RESOURCE ---------------- #
-
 @app.route('/delete_resource/<int:resource_id>', methods=['POST'])
 def delete_resource(resource_id):
     resource = Resource.query.get_or_404(resource_id)
@@ -136,9 +126,6 @@ def delete_resource(resource_id):
     db.session.commit()
     flash("🗑 Resource deleted successfully!")
     return redirect('/')
-
-# ---------------- REPORT ---------------- #
-
 @app.route('/report')
 def report():
     resources = Resource.query.all()
@@ -158,9 +145,6 @@ def report():
             'upcoming_events': upcoming_events
         })
     return render_template('report.html', data=data)
-
-# ---------------- RUN APP ---------------- #
-
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()

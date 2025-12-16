@@ -123,7 +123,6 @@
 
 <div class="container">
 
-    <!-- ADD EVENT -->
     <div class="card">
         <h2>Add Event</h2>
         <form method="post" action="/add_event">
@@ -134,8 +133,6 @@
             <button>Add Event</button>
         </form>
     </div>
-
-    <!-- ADD RESOURCE -->
     <div class="card">
         <h2>Add Resource</h2>
         <form method="post" action="/add_resource">
@@ -144,7 +141,6 @@
             <button>Add Resource</button>
         </form>
 
-        <!-- LIST RESOURCES INLINE EDIT & DELETE -->
         <h3>Resources</h3>
         {% for r in resources %}
         <div class="event-item">
@@ -164,7 +160,6 @@
         {% endfor %}
     </div>
 
-    <!-- ALLOCATE -->
     <div class="card">
         <h2>Allocate Resource</h2>
         <form method="post" action="/allocate">
@@ -190,7 +185,6 @@
         {% endwith %}
     </div>
 
-    <!-- EDIT EVENTS -->
     <div class="card">
         <h2>Edit Events</h2>
         {% for e in events %}
