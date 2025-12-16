@@ -50,6 +50,21 @@
             text-decoration: none;
         }
 
+        .delete-btn {
+            padding: 5px 10px;
+            background: linear-gradient(135deg, #ff4d4d, #ff1a1a);
+            border: none;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .delete-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -71,7 +86,17 @@
     <tr>
         <td>{{r.name}}</td>
         <td>{{r.hours}}</td>
-        <td>{{r.upcoming}}</td>
+        <td>
+            {% for e in r.upcoming_events %}
+                {{e.title}} ({{e.start_time.strftime('%d %b %H:%M')}})
+                <form action="{{ url_for('delete_event', event_id=e.id) }}" method="POST" style="display:inline;">
+                    <button type="submit" class="delete-btn" onclick="return confirm('Are you sure you want to delete this event?')">
+                        🗑
+                    </button>
+                </form>
+                <br>
+            {% endfor %}
+        </td>
     </tr>
     {% endfor %}
 </table>

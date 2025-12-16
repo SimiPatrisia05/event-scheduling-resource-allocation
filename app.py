@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, flash
+from flask import Flask, render_template, request, redirect, flash, url_for
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
@@ -32,11 +32,8 @@ def has_conflict(resource_id, start, end, exclude_event_id=None):
     allocations = Allocation.query.filter_by(resource_id=resource_id).all()
     for alloc in allocations:
         event = Event.query.get(alloc.event_id)
-
-        # Skip self when editing
         if exclude_event_id and event.id == exclude_event_id:
             continue
-
         if start < event.end_time and end > event.start_time:
             return True
     return False
@@ -75,13 +72,10 @@ def add_resource():
 def allocate():
     event_id = request.form['event']
     resource_id = request.form['resource']
-
     event = Event.query.get(event_id)
-
     if has_conflict(resource_id, event.start_time, event.end_time):
         flash("❌ Resource conflict detected!")
         return redirect('/')
-
     alloc = Allocation(event_id=event_id, resource_id=resource_id)
     db.session.add(alloc)
     db.session.commit()
@@ -93,33 +87,55 @@ def allocate():
 @app.route('/edit_event/<int:event_id>', methods=['GET', 'POST'])
 def edit_event(event_id):
     event = Event.query.get(event_id)
-
     if request.method == 'POST':
         new_start = datetime.fromisoformat(request.form['start'])
         new_end = datetime.fromisoformat(request.form['end'])
-
-        # Check conflicts for all allocated resources
         allocations = Allocation.query.filter_by(event_id=event.id).all()
         for alloc in allocations:
-            if has_conflict(
-                alloc.resource_id,
-                new_start,
-                new_end,
-                exclude_event_id=event.id
-            ):
+            if has_conflict(alloc.resource_id, new_start, new_end, exclude_event_id=event.id):
                 flash("❌ Conflict detected after editing event time!")
                 return redirect('/')
-
         event.title = request.form['title']
         event.start_time = new_start
         event.end_time = new_end
         event.description = request.form['desc']
-
         db.session.commit()
         flash("✅ Event updated successfully!")
         return redirect('/')
-
     return render_template('edit_event.html', event=event)
+
+# ---------------- DELETE EVENT ---------------- #
+
+@app.route('/delete/<int:event_id>', methods=['POST'])
+def delete_event(event_id):
+    event = Event.query.get_or_404(event_id)
+    Allocation.query.filter_by(event_id=event.id).delete()
+    db.session.delete(event)
+    db.session.commit()
+    flash("🗑 Event deleted successfully!")
+    return redirect(request.referrer or '/')
+
+# ---------------- EDIT RESOURCE INLINE ---------------- #
+
+@app.route('/edit_resource/<int:resource_id>', methods=['POST'])
+def edit_resource(resource_id):
+    resource = Resource.query.get_or_404(resource_id)
+    resource.name = request.form['name']
+    resource.type = request.form['type']
+    db.session.commit()
+    flash("✅ Resource updated successfully!")
+    return redirect('/')
+
+# ---------------- DELETE RESOURCE ---------------- #
+
+@app.route('/delete_resource/<int:resource_id>', methods=['POST'])
+def delete_resource(resource_id):
+    resource = Resource.query.get_or_404(resource_id)
+    Allocation.query.filter_by(resource_id=resource.id).delete()
+    db.session.delete(resource)
+    db.session.commit()
+    flash("🗑 Resource deleted successfully!")
+    return redirect('/')
 
 # ---------------- REPORT ---------------- #
 
@@ -127,24 +143,23 @@ def edit_event(event_id):
 def report():
     resources = Resource.query.all()
     data = []
-
     for r in resources:
         allocations = Allocation.query.filter_by(resource_id=r.id).all()
         total_hours = 0
-        upcoming = []
-
+        upcoming_events = []
         for a in allocations:
             e = Event.query.get(a.event_id)
-            total_hours += (e.end_time - e.start_time).seconds / 3600
-            upcoming.append(e.title)
-
+            if e:
+                total_hours += (e.end_time - e.start_time).seconds / 3600
+                upcoming_events.append(e)
         data.append({
             'name': r.name,
             'hours': total_hours,
-            'upcoming': upcoming
+            'upcoming_events': upcoming_events
         })
-
     return render_template('report.html', data=data)
+
+# ---------------- RUN APP ---------------- #
 
 if __name__ == '__main__':
     with app.app_context():
