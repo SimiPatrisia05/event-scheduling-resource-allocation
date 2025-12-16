@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Event Scheduler</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            min-height: 100vh;
+            margin: 0;
+            padding: 30px;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            animation: fadeIn 1s ease-in;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            animation: slideUp 0.8s ease;
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #5a3ee5;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            color: white;
+            font-size: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .edit-btn {
+            margin-top: 8px;
+            background: linear-gradient(135deg, #ff9966, #ff5e62);
+            font-size: 13px;
+        }
+
+        .flash {
+            background: #ff4d4d;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 10px;
+            animation: shake 0.4s;
+        }
+
+        .event-item {
+            background: rgba(255,255,255,0.7);
+            padding: 10px;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+
+        a {
+            display: block;
+            text-align: center;
+            margin-top: 30px;
+            color: white;
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>✨ Event Scheduling & Resource Allocation ✨</h1>
+
+<div class="container">
+
+    <!-- ADD EVENT -->
+    <div class="card">
+        <h2>Add Event</h2>
+        <form method="post" action="/add_event">
+            <input name="title" placeholder="Event Title" required>
+            <input type="datetime-local" name="start" required>
+            <input type="datetime-local" name="end" required>
+            <input name="desc" placeholder="Description">
+            <button>Add Event</button>
+        </form>
+    </div>
+
+    <!-- ADD RESOURCE -->
+    <div class="card">
+        <h2>Add Resource</h2>
+        <form method="post" action="/add_resource">
+            <input name="name" placeholder="Resource Name" required>
+            <input name="type" placeholder="Type (Room / Instructor)" required>
+            <button>Add Resource</button>
+        </form>
+    </div>
+
+    <!-- ALLOCATE -->
+    <div class="card">
+        <h2>Allocate Resource</h2>
+        <form method="post" action="/allocate">
+            <select name="event">
+                {% for e in events %}
+                <option value="{{e.id}}">{{e.title}}</option>
+                {% endfor %}
+            </select>
+
+            <select name="resource">
+                {% for r in resources %}
+                <option value="{{r.id}}">{{r.name}}</option>
+                {% endfor %}
+            </select>
+
+            <button>Allocate</button>
+        </form>
+
+        {% with messages = get_flashed_messages() %}
+          {% for msg in messages %}
+            <div class="flash">{{msg}}</div>
+          {% endfor %}
+        {% endwith %}
+    </div>
+
+    <!-- EDIT EVENTS -->
+    <div class="card">
+        <h2>Edit Events</h2>
+        {% for e in events %}
+        <div class="event-item">
+            <strong>{{e.title}}</strong><br>
+            {{e.start_time.strftime('%d %b %H:%M')}} - {{e.end_time.strftime('%H:%M')}}
+            <a href="/edit_event/{{e.id}}">
+                <button class="edit-btn">✏ Edit</button>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+<a href="/report">📊 View Resource Utilisation Report</a>
+
+</body>
+</html>
