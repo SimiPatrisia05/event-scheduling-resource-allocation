@@ -12,7 +12,7 @@
 - Resource utilisation report
 
 ### Screenshots
-()
+("C:\Users\SIDDHARTH.N.R\Downloads\WhatsApp Image 2025-12-16 at 23.02.41.jpeg")
 
 ### Demo Video
-("C:\Users\SIDDHARTH.N.R\Desktop\demovideo.html")
+()
