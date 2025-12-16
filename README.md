@@ -20,5 +20,5 @@ https://github.com/SimiPatrisia05/event-scheduling-resource-allocation/blob/78bd
 
 
 ###  Demo Video
-[Watch Demo Video](demo.mp4) 
+[Watch Demo Video](https://drive.google.com/file/d/1AXFTxd3SoAbQNPKIjEeyh64uCs8jhoLd/view?usp=drive_link) 
  Will this work
